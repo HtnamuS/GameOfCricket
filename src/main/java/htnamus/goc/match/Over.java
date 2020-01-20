@@ -6,7 +6,7 @@ import java.util.Collections;
 import java.util.List;
 
 public class Over {
-	char[] balls;
+	String[] balls;
 	int curScore;
 	int noOfBalls;
 	int noOfWicketsDown;
@@ -20,7 +20,7 @@ public class Over {
 	}
 	
 	public void play(Team battingTeam, Player BattingEnd, Player BowlingEnd, Player bowler, int wickets, int score) {
-		balls = new char[6];
+		balls = new String[6];
 		curScore = score;
 		this.noOfWicketsDown = wickets;
 		this.battingEnd = BattingEnd;
@@ -28,10 +28,10 @@ public class Over {
 		int runsThisOver = 0;
 		for (int i = 0; i < 6; i++) {
 			int runs = runsScored();
-			boolean wicket = ((int)(Math.random()*50) == 0);
+			boolean wicket = ((int)(Math.random()*40) == 0);
 			battingEnd.incrementBallsPlayed();
 			if(wicket){ //WICKET
-				balls[i] = 'W';
+				balls[i] = "W";
 				noOfWicketsDown++;
 				try {
 					bowler.incrementWickets();
@@ -46,7 +46,7 @@ public class Over {
 				battingEnd = battingTeam.nextBatsman();
 				continue;
 			}
-			balls[i] = (char)(runs + '0');
+			balls[i] = String.valueOf(runs);
 			curScore += runs;
 			try {
 				bowler.incrementRunsGiven(runs);
@@ -57,12 +57,15 @@ public class Over {
 			battingEnd.incrementBallsPlayed();
 			battingEnd.incrementScore(runs);
 			runsThisOver+= runs;
-			if(runs == 4)
+			if(runs == 4){
 				battingEnd.incrementFours();
+			}
 			if (runs == 6) {
 				battingEnd.incrementSixes();
 			}
 			if(curScore >= target){
+				bowler.setDecimalBallsBowled(i+1);
+				noOfBalls = i+1;
 				return;
 			}
 			if(runs % 2 != 0){
@@ -85,7 +88,7 @@ public class Over {
 		Integer[] arr = {
 			30, // 0
 			32, // 1
-			12, // 2
+			8, // 2
 			6, // 3
 			6, // 4
 			1, //5
@@ -96,16 +99,16 @@ public class Over {
 		
 		if(rand<probs.get(0))
 			return 0;
-		if(rand- probs.subList(0,1).stream().mapToInt(a->a).sum() < probs.get(0) )
+		if(rand- probs.subList(0,1).stream().mapToInt(a->a).sum() < probs.get(1) )
 			return 1;
-		if(rand - probs.subList(0,2).stream().mapToInt(a->a).sum() < probs.get(1))
+		if(rand - probs.subList(0,2).stream().mapToInt(a->a).sum() < probs.get(2))
 			return 2;
-		if(rand- probs.subList(0,3).stream().mapToInt(a->a).sum() < probs.get(2))
+		if(rand- probs.subList(0,3).stream().mapToInt(a->a).sum() < probs.get(3))
 			return 3;
-		if (rand - probs.subList(0,4).stream().mapToInt(a->a).sum() < probs.get(3)) {
+		if (rand - probs.subList(0,4).stream().mapToInt(a->a).sum() < probs.get(4)) {
 			return 4;
 		}
-		if (rand - probs.subList(0,5).stream().mapToInt(a->a).sum() < probs.get(4)) {
+		if (rand - probs.subList(0,5).stream().mapToInt(a->a).sum() < probs.get(5)) {
 			return 5;
 		}
 		else {

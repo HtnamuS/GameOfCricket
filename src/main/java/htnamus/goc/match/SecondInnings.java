@@ -1,5 +1,7 @@
 package htnamus.goc.match;
 
+import java.util.ArrayList;
+
 public class SecondInnings extends Innings {
 	int target;
 	public SecondInnings(Team batting, Team bowling, int noOfOvers, int target) {
@@ -7,7 +9,7 @@ public class SecondInnings extends Innings {
 		this.bowlingTeam = bowling;
 		this.target = target;
 		totalOvers = noOfOvers;
-		overs = new Over[totalOvers];
+		overs = new ArrayList<>();
 		this.bowler = null;
 		this.InningsNumber = "Second";
 	}
@@ -16,7 +18,8 @@ public class SecondInnings extends Innings {
 		bowlingEnd = battingTeam.nextBatsman();
 		for (int i = 0; i < this.totalOvers; i++) {
 			this.bowler = bowlingTeam.nextBowler(this.bowler);
-			Over curOver = this.overs[i] = new Over();
+			Over curOver = new Over(target);
+			overs.add(curOver);
 			curOver.play(battingTeam, battingEnd, bowlingEnd, bowler, this.wickets, score);
 			int noOfBalls = curOver.noOfBalls;
 			this.wickets = curOver.noOfWicketsDown;
@@ -26,8 +29,6 @@ public class SecondInnings extends Innings {
 			this.decimalBalls = noOfBalls%6;
 			this.nOvers += noOfBalls/6;
 			if(wickets == 10 || score>=target){
-				System.out.println("score = " + score);
-				System.out.println("target = " + target);
 				break;
 			}
 			try {
