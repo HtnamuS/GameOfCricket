@@ -97,7 +97,7 @@ public abstract class Innings {
 		for(Over over: overs){
 			overScoresBuilder.append(String.format("  <tr>\n" +
 				                                       "    <th>Over %d</td>\n" +
-				                                       " <td> %d </td>",
+				                                       " <th> %d </th>",
 				i,
 				Arrays.stream(over.balls).map(a -> {
 					if(a == null || a.equals("W")){
@@ -109,10 +109,19 @@ public abstract class Innings {
 				if(over.balls[j] != null)
 					overScoresBuilder.append(String.format("    <td>%s</td>\n", over.balls[j]));
 				else
-					overScoresBuilder.append(String.format("    <td> - </td>\n"));
+					overScoresBuilder.append("<td> - </td>\n");
 			}
 			i++;
 		}
+		overScoresBuilder.append("  <tr>\n" +
+			                                       "<tr>");
+		for (int j = 0; j < 8; j++) {
+			if(j == 1)
+				overScoresBuilder.append(String.format("    <th>%d</th>\n", score));
+			else
+				overScoresBuilder.append("    <td> - </td>\n");
+		}
+		overScoresBuilder.append("  <tr>\n");
 		overScoresBuilder.append("</table></br>");
 		return overScoresBuilder.toString();
 	}
