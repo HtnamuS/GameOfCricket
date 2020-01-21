@@ -30,7 +30,7 @@ public class Team {
 	}
 	public Player nextBowler(Player prevBowler){
 		Player nextBowler = Bowlers.get((int) (Math.random() * Bowlers.size()));
-		while(nextBowler == prevBowler){
+		while(nextBowler == prevBowler || nextBowler.getNoOfOversBowled() >= 10){
 			nextBowler = Bowlers.get((int) (Math.random() * Bowlers.size()));
 		}
 		return nextBowler;
