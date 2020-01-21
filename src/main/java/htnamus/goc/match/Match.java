@@ -6,8 +6,8 @@ public class Match {
 	FirstInnings first;
 	SecondInnings second;
 	public Match(MatchType m){
-		T1 = new Team();
-		T2 = new Team();
+		T1 = new Team(m);
+		T2 = new Team(m);
 		T1.name = "India";
 		T2.name = "England";
 		this.noOfOvers = m.noOfOvers;

@@ -24,7 +24,7 @@ public abstract class Innings {
 			                                                        "    <th>Strike Rate</th>\n" +
 			                                                        "  </tr>\n");
 		for (Player p :
-			battingTeam.Playing11) {
+			battingTeam.PlayingTeam) {
 			if (p.getNoOfBallsPlayed() == 0)
 				scoreCardTableBuilder.append(String.format("  <tr>\n" +
 					                                           "    <td>Player %d</td>\n" +
@@ -73,7 +73,7 @@ public abstract class Innings {
 					                                           "    <td>%.1f</td>\n" +
 					                                           "  </tr>\n", p.JerseyNo, p.type, p.getNoOfOversBowled(), p.getNoOfMaidens(),p.getDecimalBallsBowled(),
 					p.getNoOfWicketsTaken(), p.getRunsGiven(),
-					((float) 6 * p.getRunsGiven() / (float) (6 * p.getNoOfOversBowled() + p.getDecimalBallsBowled()))));
+					((float) MATCH_CONSTANTS.NO_BALLS_PER_OVER * p.getRunsGiven() / (float) (6 * p.getNoOfOversBowled() + p.getDecimalBallsBowled()))));
 		}
 		scoreCardTableBuilder.append("</table></br>");
 		return scoreCardTableBuilder.toString();
@@ -105,7 +105,7 @@ public abstract class Innings {
 					}
 					return Integer.parseInt(a);
 				} ).reduce(0, Integer::sum)));
-			for (int j = 0; j < 6; j++) {
+			for (int j = 0; j < MATCH_CONSTANTS.NO_BALLS_PER_OVER; j++) {
 				if(over.balls[j] != null)
 					overScoresBuilder.append(String.format("    <td>%s</td>\n", over.balls[j]));
 				else
@@ -115,7 +115,7 @@ public abstract class Innings {
 		}
 		overScoresBuilder.append("  <tr>\n" +
 			                                       "<tr>");
-		for (int j = 0; j < 8; j++) {
+		for (int j = 0; j < MATCH_CONSTANTS.NO_BALLS_PER_OVER + 2; j++) {
 			if(j == 1)
 				overScoresBuilder.append(String.format("    <th>%d</th>\n", score));
 			else

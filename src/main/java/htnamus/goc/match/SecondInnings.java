@@ -26,9 +26,9 @@ public class SecondInnings extends Innings {
 			this.score  = curOver.curScore;
 			battingEnd = curOver.battingEnd;
 			bowlingEnd = curOver.bowlingEnd;
-			this.decimalBalls = noOfBalls%6;
-			this.nOvers += noOfBalls/6;
-			if(wickets == 10 || score>=target){
+			this.decimalBalls = noOfBalls%MATCH_CONSTANTS.NO_BALLS_PER_OVER;
+			this.nOvers += noOfBalls/MATCH_CONSTANTS.NO_BALLS_PER_OVER;
+			if(wickets == MATCH_CONSTANTS.NO_OF_PLAYERS_PER_TEAM - 1 || score>=target){
 				break;
 			}
 			try {

@@ -25,9 +25,9 @@ public class FirstInnings extends Innings {
 			this.score  = curOver.curScore;
 			battingEnd = curOver.battingEnd;
 			bowlingEnd = curOver.bowlingEnd;
-			this.decimalBalls = noOfBalls%6;
-			nOvers += noOfBalls/6;
-			if(wickets == 10){
+			this.decimalBalls = noOfBalls%MATCH_CONSTANTS.NO_BALLS_PER_OVER;
+			nOvers += noOfBalls/MATCH_CONSTANTS.NO_BALLS_PER_OVER;
+			if(wickets == MATCH_CONSTANTS.NO_OF_PLAYERS_PER_TEAM - 1){
 				break;
 			}
 			try {
