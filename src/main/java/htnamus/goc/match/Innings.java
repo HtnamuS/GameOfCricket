@@ -1,128 +1,240 @@
 package htnamus.goc.match;
 
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.*;
+import java.util.stream.Collectors;
 
-public abstract class Innings {
-	protected Team battingTeam, bowlingTeam;
-	protected int score, wickets, nOvers, totalOvers, decimalBalls;
-	protected ArrayList<Over> overs;
-	protected Player battingEnd, bowlingEnd, bowler;
-	protected String InningsNumber;
+
+public class Innings {
+	private Team battingTeam, bowlingTeam;
+	private int score, wickets, nOvers, totalOvers, decimalBalls, target;
+	private ArrayList<Over> overs;
+	private Player bowler;
 	
-	public String getScoreCard() {
-		StringBuilder scoreCardTableBuilder = new StringBuilder("<h2>" + InningsNumber + " Innings:</h2>\n" +
-			                                                        "<h3>" + battingTeam.name + " Batting:</h3>\n" +
-			                                                        "<table>\n" +
-			                                                        "  <tr>\n" +
-			                                                        "    <th>Player Name</th>\n" +
-			                                                        "    <th>Player Type</th>\n" +
-			                                                        "    <th>Runs</th>\n" +
-			                                                        "    <th>No. Of Balls Played</th>\n" +
-			                                                        "    <th>No. Of Fours</th>\n" +
-			                                                        "    <th>No. Of Sixes</th>\n" +
-			                                                        "    <th>Strike Rate</th>\n" +
-			                                                        "  </tr>\n");
-		for (Player p :
-			battingTeam.PlayingTeam) {
-			if (p.getNoOfBallsPlayed() == 0)
-				scoreCardTableBuilder.append(String.format("  <tr>\n" +
-					                                           "    <td>Player %d</td>\n" +
-					                                           "    <td>%s</td>\n" +
-					                                           "    <td>-</td>\n" +
-					                                           "    <td>-</td>\n" +
-					                                           "    <td>-</td>\n" +
-					                                           "    <td>-</td>\n" +
-					                                           "    <td>-</td>\n" +
-					                                           "  </tr>\n", p.JerseyNo, p.type));
-			else
-				scoreCardTableBuilder.append(String.format("  <tr>\n" +
-					                                           "    <td>Player %d</td>\n" +
-					                                           "    <td>%s</td>\n" +
-					                                           "    <td>%d</td>\n" +
-					                                           "    <td>%d</td>\n" +
-					                                           "    <td>%d</td>\n" +
-					                                           "    <td>%d</td>\n" +
-					                                           "    <td>%.1f</td>\n" +
-					                                           "  </tr>\n", p.JerseyNo, p.type, p.getScore(), p.getNoOfBallsPlayed(),
-					p.getNoOfFours(), p.getNoOfSixes(),
-					((float) p.getScore() * 100 / p.getNoOfBallsPlayed())));
+	private List<Partnership> partnerships;
+	
+	public class InningsScoreCard{
+		
+		public BattingScoreCard battingScoreCard;
+		public BowlingScoreCard bowlingScoreCard;
+		
+		private class BattingScoreCard{
+			public List<BatsmanScoreCard> batsmenScoreCards;
+			
+			private class BatsmanScoreCard {
+				final public  int jerseyNo;
+				final public String playerName;
+				final public  Player.PlayerType playerType;
+				final public  int runs, noOfBalls, noOfFours, noOfSixes;
+				
+				public BatsmanScoreCard(int jerseyNo, String name,Player.PlayerType playerType, int runs, int noOfBalls, int noOfFours, int noOfSixes) {
+					this.jerseyNo = jerseyNo;
+					this.playerName = name;
+					this.playerType = playerType;
+					this.runs = runs;
+					this.noOfBalls = noOfBalls;
+					this.noOfFours = noOfFours;
+					this.noOfSixes = noOfSixes;
+				}
+			}
+			
+			public BattingScoreCard() {
+				this.batsmenScoreCards = new ArrayList<>(MATCH_CONSTANTS.NO_OF_PLAYERS_PER_TEAM);
+				for(Player player: battingTeam.PlayingTeam){
+					if(player.getNoOfBallsPlayed() == 0)
+						continue;
+					batsmenScoreCards.add(new BatsmanScoreCard(player.getJerseyNo(), player.getName(),player.getPlayerType(), player.getScore(),
+						player.getNoOfBallsPlayed(), player.getNoOfFours(), player.getNoOfSixes()));
+				}
+			}
 		}
 		
-		scoreCardTableBuilder.append("</table> </br>\n" + "<h3>").append(bowlingTeam.name).append(" Bowling:</h3>\n").append("<table>\n").append("  <tr>\n").append("    <th>Player Name</th>\n").append("    <th>Player Type</th>\n").append("    <th>No. Of Overs Bowled</th>\n").append("    <th>No. Of Maidens</th>\n").append("    <th>No. Of Wickets Taken</th>\n").append("    <th>No. Of Runs Given</th>\n").append("    <th>Economy</th>\n").append("  </tr>\n");
-		for (Player p :
-			bowlingTeam.Bowlers) {
-			if (p.getNoOfOversBowled() == 0 && p.getDecimalBallsBowled() == 0)
-				scoreCardTableBuilder.append(String.format("  <tr>\n" +
-					                                           "    <td>Player %d</td>\n" +
-					                                           "    <td>%s</td>\n" +
-					                                           "    <td>-</td>\n" +
-					                                           "    <td>-</td>\n" +
-					                                           "    <td>-</td>\n" +
-					                                           "    <td>-</td>\n" +
-					                                           "    <td>-</td>\n" +
-					                                           "  </tr>\n", p.JerseyNo, p.type));
-			else
-				scoreCardTableBuilder.append(String.format("  <tr>\n" +
-					                                           "    <td>Player %d</td>\n" +
-					                                           "    <td>%s</td>\n" +
-					                                           "    <td>%d.%d</td>\n" +
-					                                           "    <td>%d</td>\n" +
-					                                           "    <td>%d</td>\n" +
-					                                           "    <td>%d</td>\n" +
-					                                           "    <td>%.1f</td>\n" +
-					                                           "  </tr>\n", p.JerseyNo, p.type, p.getNoOfOversBowled(), p.getNoOfMaidens(),p.getDecimalBallsBowled(),
-					p.getNoOfWicketsTaken(), p.getRunsGiven(),
-					((float) MATCH_CONSTANTS.NO_BALLS_PER_OVER * p.getRunsGiven() / (float) (6 * p.getNoOfOversBowled() + p.getDecimalBallsBowled()))));
+		private class BowlingScoreCard{
+			public List<BowlerScoreCard> bowlersScoreCard;
+			
+			private class BowlerScoreCard {
+				final public int jerseyNo;
+				final public String playerName;
+				final public Player.PlayerType playerType;
+				final public int noOfMaidens, noOfWickets, noOfRunsGiven;
+				final public float noOfOvers;
+				
+				public BowlerScoreCard(int jerseyNo, String name,Player.PlayerType playerType, float noOfOvers, int noOfMaidens, int noOfWickets,
+				                       int noOfRunsGiven) {
+					this.jerseyNo = jerseyNo;
+					this.playerName = name;
+					this.playerType = playerType;
+					this.noOfOvers = noOfOvers;
+					this.noOfMaidens = noOfMaidens;
+					this.noOfWickets = noOfWickets;
+					this.noOfRunsGiven = noOfRunsGiven;
+				}
+			}
+			
+			
+			public BowlingScoreCard() {
+				this.bowlersScoreCard = new ArrayList<>(bowlingTeam.Bowlers.size());
+				for(Player player: bowlingTeam.Bowlers){
+					if(player.getNoOfOversBowled() == 0 && player.getDecimalBallsBowled()==0)
+						continue;
+					bowlersScoreCard.add(new BowlerScoreCard(player.getJerseyNo(), player.getName(),player.getPlayerType(),
+						player.getNoOfOversBowled() + 0.1f*player.getDecimalBallsBowled(),
+						player.getNoOfMaidens(), player.getNoOfWicketsTaken(), player.getRunsGiven()));
+				}
+			}
 		}
-		scoreCardTableBuilder.append("</table></br>");
-		return scoreCardTableBuilder.toString();
+		
+		private InningsScoreCard() {
+			this.battingScoreCard = new BattingScoreCard();
+			this.bowlingScoreCard = new BowlingScoreCard();
+		}
 	}
 	
-	public String getOverScores(){
-		StringBuilder overScoresBuilder = new StringBuilder("<h2>" + InningsNumber + " Innings:</h2>\n" +
-			                                                        "<h3>" + battingTeam.name + " Batting:</h3>\n" +
-			                                                        "<table>\n" +
-			                                                        "  <tr>\n" +
-			                                                    "    <th>Over No.</th>\n" +
-			                                                    "    <th>Over Total</th>\n" +
-			                                                    "    <th>1st Ball</th>\n" +
-			                                                    "    <th>2nd Ball</th>\n" +
-			                                                    "    <th>3rd Ball</th>\n" +
-			                                                    "    <th>4th Ball</th>\n" +
-			                                                    "    <th>5th Ball</th>\n" +
-			                                                    "    <th>6th Ball</th>\n" +
-			                                                    "  </tr>\n");
-		int i = 1;
-		for(Over over: overs){
-			overScoresBuilder.append(String.format("  <tr>\n" +
-				                                       "    <th>Over %d</td>\n" +
-				                                       " <th> %d </th>",
-				i,
-				Arrays.stream(over.balls).map(a -> {
-					if(a == null || a.equals("W")){
-						return 0;
-					}
-					return Integer.parseInt(a);
-				} ).reduce(0, Integer::sum)));
-			for (int j = 0; j < MATCH_CONSTANTS.NO_BALLS_PER_OVER; j++) {
-				if(over.balls[j] != null)
-					overScoresBuilder.append(String.format("    <td>%s</td>\n", over.balls[j]));
-				else
-					overScoresBuilder.append("<td> - </td>\n");
+	public class OversScores {
+		public List<OverScores> oversScores;
+		
+		private class OverScores{
+			final public int runs, wickets;
+			final public String bowler;
+			final public List<String> balls;
+			final public List<String> batmenThisOver;
+			
+			public OverScores(int runs, int wickets, Player bowler, List<Over.BallType> balls, List<Player> batmenThisOver) {
+				this.runs = runs;
+				this.wickets = wickets;
+				this.bowler = bowler.getName();
+				this.balls = balls.stream().map(Over.BallType::toString).collect(Collectors.toList());
+				this.batmenThisOver = batmenThisOver.stream().map(Player::getName).collect(Collectors.toList());
 			}
-			i++;
 		}
-		overScoresBuilder.append("  <tr>\n" +
-			                                       "<tr>");
-		for (int j = 0; j < MATCH_CONSTANTS.NO_BALLS_PER_OVER + 2; j++) {
-			if(j == 1)
-				overScoresBuilder.append(String.format("    <th>%d</th>\n", score));
-			else
-				overScoresBuilder.append("    <td> - </td>\n");
+		
+		public OversScores() {
+			oversScores = new ArrayList<>(nOvers);
+			for (Over over : overs) {
+				oversScores.add(new OverScores(over.getRunsThisOver(), over.getNoOfWicketsDown(), over.getBowler(), over.getBalls(),
+					over.getBatsmenThisOver()));
+			}
 		}
-		overScoresBuilder.append("  <tr>\n");
-		overScoresBuilder.append("</table></br>");
-		return overScoresBuilder.toString();
 	}
+	
+	public static class Partnership {
+		private final Player batsman1, batsman2;
+		private final int initScore, initBallsPlayed, batsman1InitScore, batsman2InitScore;
+		public Partnership.PartnershipReport partnershipReport;
+		
+		public Partnership(Player batsman1, Player batsman2, int initScore, int oversPlayed, int decimalBallsPlayed) {
+			this.batsman1 = batsman1;
+			this.batsman2 = batsman2;
+			this.batsman1InitScore = batsman1.getScore();
+			this.batsman2InitScore = batsman2.getScore();
+			this.initBallsPlayed = oversPlayed*MATCH_CONSTANTS.NO_BALLS_PER_OVER + decimalBallsPlayed;
+			this.initScore = initScore;
+		}
+		
+		public class PartnershipReport{
+			public final String batsman1, batsman2;
+			public final int score, noOfBalls, batsman1Contribution, batsman2Contribution;
+			
+			private PartnershipReport(Player batsman1, Player batsman2, int score, int noOfBalls) {
+				this.batsman1 = batsman1.getName();
+				this.batsman2 = batsman2.getName();
+				this.score = score;
+				this.noOfBalls = noOfBalls;
+				this.batsman1Contribution = batsman1.getScore() - batsman1InitScore;
+				this.batsman2Contribution = batsman2.getScore() - batsman2InitScore;
+			}
+			
+		}
+		
+		public void generatePartnershipReport(int finalScore, int finalNOvers, int finalNDecBalls){
+			partnershipReport = new Partnership.PartnershipReport(batsman1, batsman2, finalScore - initScore, finalNOvers * 6 + finalNDecBalls - initBallsPlayed);
+		}
+	}
+	
+	private Innings(Team batting, Team bowling, int no) {
+		this.battingTeam = batting;
+		this.bowlingTeam = bowling;
+		this.totalOvers = no;
+		this.overs = new ArrayList<>();
+		this.bowler = null;
+		this.partnerships = new ArrayList<>();
+	}
+	
+	public static Innings getFirstInnings(Team batting, Team bowling, int nOvers){
+		Innings first = new Innings(batting, bowling, nOvers);
+		first.target = Integer.MAX_VALUE;
+		return first;
+	}
+	
+	public static Innings getSecondInnings(Team batting, Team bowling, int nOvers, int target){
+		Innings second = new Innings(batting, bowling, nOvers);
+		second.target = target;
+		return second;
+	}
+	
+	public int play(){
+		Player battingEnd = battingTeam.nextBatsman();
+		Player bowlingEnd = battingTeam.nextBatsman();
+		Over curOver;
+		Partnership partnership = new Partnership(battingEnd, bowlingEnd, score, nOvers, 0);
+		partnerships.add(partnership);
+		for (int i = 0; i < this.totalOvers; i++) {
+			this.bowler = bowlingTeam.nextBowler(this.bowler);
+			curOver = new Over();
+			overs.add(curOver);
+			
+			curOver.play(i, battingTeam, battingEnd, bowlingEnd, bowler, partnership, this.wickets, score, target);
+			
+			int noOfBalls = curOver.getNoOfBalls();
+			this.wickets = curOver.getNoOfWicketsDown();
+			this.score  = curOver.getCurScore();
+			battingEnd = curOver.getBattingEnd();
+			bowlingEnd = curOver.getBowlingEnd();
+			this.decimalBalls = noOfBalls%MATCH_CONSTANTS.NO_BALLS_PER_OVER;
+			this.nOvers += noOfBalls/MATCH_CONSTANTS.NO_BALLS_PER_OVER;
+			partnerships.addAll(curOver.getNewPartnershipsThisOver());
+			
+			if(wickets == MATCH_CONSTANTS.NO_OF_PLAYERS_PER_TEAM - 1 || score>=target)
+				break;
+			partnership = partnerships.get(partnerships.size() - 1);
+			bowler.incrementOvers();
+			
+			Player temp = bowlingEnd;
+			bowlingEnd = battingEnd;
+			battingEnd = temp;
+		}
+		return this.score;
+	}
+	
+	public int getScore() {
+		return score;
+	}
+	
+	public int getWickets() {
+		return wickets;
+	}
+	
+	public int getnOvers() {
+		return nOvers;
+	}
+	
+	public int getDecimalBalls() {
+		return decimalBalls;
+	}
+	
+	public String getBattingTeamName(){
+		return battingTeam.name;
+	}
+	
+	public InningsScoreCard getScoreCard() {
+		return new InningsScoreCard();
+	}
+	
+	public OversScores getOverScores(){
+		return new OversScores();
+	}
+	
+	public List<Partnership.PartnershipReport> getPartnernships(){
+		return partnerships.stream().map(a -> a.partnershipReport).collect(Collectors.toList());
+	}
+	
 }

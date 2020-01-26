@@ -2,117 +2,183 @@ package htnamus.goc.match;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 public class Over {
-	String[] balls;
-	int curScore;
-	int noOfBalls;
-	int noOfWicketsDown;
-	int target;
-	Player battingEnd, bowlingEnd;
-	public Over(){ // Constructor for first Innings
-		target = Integer.MAX_VALUE;
-	}
-	public Over(int target){ // Constructor for Second Innings
-		this.target =target;
+	public enum BallType{
+		ZERO(0), ONE(1), TWO(2), THREE(3), FOUR(4), FIVE(5), SIX(6), WICKET;
+		// Order of these values is extremely IMPORTANT. DO NOT CHANGE ORDER. IF NECESSARY ADD VALUES AT THE END
+		int value;
+		BallType(int val){ value = val; }
+		BallType(){ }
+		public String toString(){
+			if(this == WICKET){
+				System.out.println("Wicket it is");
+				return "W";
+			}
+			else{
+				System.out.println(value);
+				return String.valueOf(this.value);
+			}
+		}
 	}
 	
-	public void play(Team battingTeam, Player BattingEnd, Player BowlingEnd, Player bowler, int wickets, int score) {
-		balls = new String[6];
+	private List<BallType> balls;
+	private int curScore;
+	private int noOfBalls;
+	private int noOfWicketsDown;
+	private Player battingEnd, bowlingEnd;
+	private List<Innings.Partnership> newPartnershipsThisOver;
+	private List<Player> batsmenThisOver;
+	private Player bowler;
+	private int runsThisOver;
+	
+	public void play(int noPrevOvers, Team battingTeam, Player BattingEnd, Player BowlingEnd, Player bowler, Innings.Partnership partnership, int wickets, int score,
+	                 int target) {
+		balls = new ArrayList<>(MATCH_CONSTANTS.NO_BALLS_PER_OVER);
+		newPartnershipsThisOver = new ArrayList<>(2);
+		batsmenThisOver = new ArrayList<>(List.of(BattingEnd,BowlingEnd));
 		curScore = score;
 		this.noOfWicketsDown = wickets;
 		this.battingEnd = BattingEnd;
 		this.bowlingEnd = BowlingEnd;
-		int runsThisOver = 0;
-		for (int i = 0; i < 6; i++) {
-			int runs = runsScored();
-			boolean wicket = ((int)(Math.random()*40) == 0);
+		this.bowler = bowler;
+		runsThisOver = 0;
+		
+		for (int i = 0; i < MATCH_CONSTANTS.NO_BALLS_PER_OVER; i++) {
+			int ball = playBall(battingEnd, bowler);
+			boolean wicket = ball == -1;
 			battingEnd.incrementBallsPlayed();
 			if(wicket){ //WICKET
-				balls[i] = "W";
+				balls.add( BallType.WICKET);
 				noOfWicketsDown++;
-				try {
-					bowler.incrementWickets();
-				} catch (Player.WrongMethodOnPlayer wrongMethodOnPlayer) {
-					wrongMethodOnPlayer.printStackTrace();
-				}
-				if(noOfWicketsDown == 10){ //ALL out
+				bowler.incrementWickets();
+				partnership.generatePartnershipReport(curScore,noPrevOvers, i+1);
+				if(noOfWicketsDown == MATCH_CONSTANTS.NO_OF_PLAYERS_PER_TEAM -1){ //ALL out
 					bowler.setDecimalBallsBowled(i+1);
 					noOfBalls = i+1;
 					return;
 				}
 				battingEnd = battingTeam.nextBatsman();
+				partnership = new Innings.Partnership(this.bowlingEnd, this.battingEnd, this.curScore, noPrevOvers, i + 1);
+				newPartnershipsThisOver.add(partnership);
 				continue;
 			}
-			balls[i] = String.valueOf(runs);
-			curScore += runs;
-			try {
-				bowler.incrementRunsGiven(runs);
-			} catch (Player.WrongMethodOnPlayer wrongMethodOnPlayer) {
-				wrongMethodOnPlayer.printStackTrace();
-			}
+			balls.add(BallType.values()[ball]); // DEPENDS ON THE ORDER OF THE VALUES IN BallType. DO NOT CHANGE OR ELSE THIS FUNCTIONALITY WILL BE BROKEN
+			curScore += ball;
+			bowler.incrementRunsGiven(ball);
 			
 			battingEnd.incrementBallsPlayed();
-			battingEnd.incrementScore(runs);
-			runsThisOver+= runs;
-			if(runs == 4){
+			battingEnd.incrementScore(ball);
+			runsThisOver+= ball;
+			if(ball == 4){
 				battingEnd.incrementFours();
 			}
-			if (runs == 6) {
+			if (ball == 6) {
 				battingEnd.incrementSixes();
 			}
 			if(curScore >= target){
 				bowler.setDecimalBallsBowled(i+1);
 				noOfBalls = i+1;
+				partnership.generatePartnershipReport(curScore,noPrevOvers, i+1);
 				return;
 			}
-			if(runs % 2 != 0){
+			if(ball % 2 != 0){
 				Player temp = bowlingEnd;
 				bowlingEnd = battingEnd;
 				battingEnd = temp;
 			}
 		}
-		noOfBalls = 6;
+		partnership.generatePartnershipReport(curScore,noPrevOvers, 6);
+		noOfBalls = MATCH_CONSTANTS.NO_BALLS_PER_OVER;
 		if(runsThisOver == 0){
 			
-			try {
-				bowler.incrementMaidens();
-			} catch (Player.WrongMethodOnPlayer wrongMethodOnPlayer) {
-				wrongMethodOnPlayer.printStackTrace();
-			}
+			bowler.incrementMaidens();
 		}
 	}
-	private int runsScored(){
-		Integer[] arr = {
-			30, // 0
-			32, // 1
-			8, // 2
-			6, // 3
-			6, // 4
-			1, //5
-			2 //6
+	
+	private int playBall(Player batsman, Player bowler){
+		//WICKET
+		float batWeight = 2000, bowlWeight = 10;
+		float wicketThresh = 110;
+		float probWicket =
+			(batWeight/batsman.averageBallsPlayedPerInnings) + bowlWeight*(bowler.averageWicketsPer100Balls);
+		if(Math.random()*probWicket > wicketThresh)
+			return -1; //WICKET
+		
+		//RUNS
+		int SRWeight = 1;
+		float variableWeight = 2000.0f;
+		int probRun = (((SRWeight*batsman.averageStrikeRate) / 100) + (bowler.averageBowlingEconomy / 6)) / (1+SRWeight);
+		Float[] arr = {
+			40.0f + variableWeight/(0.5f + Math.abs(probRun)), // 0
+			15.0f + variableWeight/(0.5f + Math.abs(probRun - 1)), // 1
+			7.0f + variableWeight/(0.5f + Math.abs(probRun - 2)), // 2
+			4.0f + variableWeight/(0.5f + Math.abs(probRun - 3)), // 3
+			3.0f + variableWeight/(0.5f + Math.abs(probRun - 4)), // 4
+			0.25f + 0.1f* variableWeight/(0.5f + Math.abs(probRun - 5)), //5
+			1.5f + variableWeight/(0.5f + Math.abs(probRun - 6)) //6
 		};
-		List<Integer> probs = Arrays.asList(arr);
-		int rand = (int)(Math.random()*(probs.stream().mapToInt(a->a).sum()));
+		List<Float> probs = Arrays.asList(arr);
+		float rand = (float) (Math.random()*(probs.stream().reduce(0f,(sum, a)->sum+= a)));
 		
 		if(rand<probs.get(0))
 			return 0;
-		if(rand- probs.subList(0,1).stream().mapToInt(a->a).sum() < probs.get(1) )
+		if(rand- probs.subList(0,1).stream().reduce(0f,(sum, a)->sum+= a) < probs.get(1) )
 			return 1;
-		if(rand - probs.subList(0,2).stream().mapToInt(a->a).sum() < probs.get(2))
+		if(rand - probs.subList(0,2).stream().reduce(0f,(sum, a)->sum+= a) < probs.get(2))
 			return 2;
-		if(rand- probs.subList(0,3).stream().mapToInt(a->a).sum() < probs.get(3))
+		if(rand- probs.subList(0,3).stream().reduce(0f,(sum, a)->sum+= a) < probs.get(3))
 			return 3;
-		if (rand - probs.subList(0,4).stream().mapToInt(a->a).sum() < probs.get(4)) {
+		if (rand - probs.subList(0,4).stream().reduce(0f,(sum, a)->sum+= a) < probs.get(4)) {
 			return 4;
 		}
-		if (rand - probs.subList(0,5).stream().mapToInt(a->a).sum() < probs.get(5)) {
+		if (rand - probs.subList(0,5).stream().reduce(0f,(sum, a)->sum+= a) < probs.get(5)) {
 			return 5;
 		}
 		else {
 			return 6;
 		}
+		
+	}
+	
+	public List<BallType> getBalls() {
+		return balls;
+	}
+	
+	public int getCurScore() {
+		return curScore;
+	}
+	
+	public int getNoOfBalls() {
+		return noOfBalls;
+	}
+	
+	public int getNoOfWicketsDown() {
+		return noOfWicketsDown;
+	}
+	
+	public Player getBattingEnd() {
+		return battingEnd;
+	}
+	
+	public Player getBowlingEnd() {
+		return bowlingEnd;
+	}
+	
+	public List<Innings.Partnership> getNewPartnershipsThisOver() {
+		return newPartnershipsThisOver;
+	}
+	
+	public List<Player> getBatsmenThisOver() {
+		return batsmenThisOver;
+	}
+	
+	public Player getBowler() {
+		return bowler;
+	}
+	
+	public int getRunsThisOver() {
+		return runsThisOver;
 	}
 }
