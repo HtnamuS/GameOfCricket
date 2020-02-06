@@ -4,7 +4,9 @@ import java.util.List;
 
 public class Match {
 	public enum MatchType {
-		ODI(50, 10),T20(20, 4);
+		ODI(50, 10),
+		T20(20, 4);
+		
 		public final int noOfOvers;
 		public final int noOfOversPerBowler;
 		MatchType(int numOfOvers, int numOversPerBowler){
@@ -85,8 +87,8 @@ public class Match {
 		public final List<Innings.Partnership.PartnershipReport> firstInningsPartnershipsReport, secondInningsPartnershipsReport;
 		
 		public PartnershipsReport() {
-			this.firstInningsPartnershipsReport = firstInnings.getPartnernships();
-			this.secondInningsPartnershipsReport = secondInnings.getPartnernships();
+			this.firstInningsPartnershipsReport = firstInnings.getPartnerships();
+			this.secondInningsPartnershipsReport = secondInnings.getPartnerships();
 		}
 	}
 	

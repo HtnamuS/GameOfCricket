@@ -13,11 +13,9 @@ public class Over {
 		BallType(){ }
 		public String toString(){
 			if(this == WICKET){
-				System.out.println("Wicket it is");
 				return "W";
 			}
 			else{
-				System.out.println(value);
 				return String.valueOf(this.value);
 			}
 		}
@@ -67,16 +65,17 @@ public class Over {
 			balls.add(BallType.values()[ball]); // DEPENDS ON THE ORDER OF THE VALUES IN BallType. DO NOT CHANGE OR ELSE THIS FUNCTIONALITY WILL BE BROKEN
 			curScore += ball;
 			bowler.incrementRunsGiven(ball);
-			
+			// TODO: Ordinals to be removed, shorter functions
 			battingEnd.incrementBallsPlayed();
 			battingEnd.incrementScore(ball);
 			runsThisOver+= ball;
 			if(ball == 4){
 				battingEnd.incrementFours();
 			}
-			if (ball == 6) {
+			else if (ball == 6) {
 				battingEnd.incrementSixes();
 			}
+			
 			if(curScore >= target){
 				bowler.setDecimalBallsBowled(i+1);
 				noOfBalls = i+1;
@@ -104,7 +103,7 @@ public class Over {
 		float probWicket =
 			(batWeight/batsman.averageBallsPlayedPerInnings) + bowlWeight*(bowler.averageWicketsPer100Balls);
 		if(Math.random()*probWicket > wicketThresh)
-			return -1; //WICKET
+			return -1;
 		
 		//RUNS
 		int SRWeight = 1;
