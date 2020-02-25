@@ -1,33 +1,38 @@
-package htnamus.goc.match;
+package htnamus.goc.model;
 
 public class Player {
-	enum PlayerType{
+	public enum PlayerType{
 		BATTING, BOWLING, ALLROUNDER
 	}
-	private int score, noOfBallsPlayed, noOfOversBowled, noOfWicketsTaken, runsGiven, decimalBallsBowled, noOfFours, noOfSixes, noOfMaidens;
+	private int score,
+		noOfBallsPlayed,
+		noOfOversBowled,
+		noOfWicketsTaken,
+		runsGiven,
+		decimalBallsBowled,
+		noOfFours,
+		noOfSixes,
+		noOfMaidens;
 	private final int JerseyNo;
 	private final String name;
-	final int averageStrikeRate, // Average Strike Rate
-		averageBowlingEconomy, // Average Economy
-		averageBallsPlayedPerInnings, // Average balls Played per Innings
-		averageWicketsPer100Balls; // Average number of Boundaries for 100 Balls
+	private final PlayerStats playerStats;
 	private final PlayerType playerType;
-	public Player(PlayerType playerType, String name,int jerseyNo, int strikeRate, int bowlingEconomy, int ballsPlayedPerInnings, int wicketsPer100Balls ) {
+	
+	
+	public Player(PlayerType playerType, String name,int jerseyNo, PlayerStats playerStats) {
 		this.playerType = playerType;
 		this.name = name;
 		this.JerseyNo = jerseyNo;
-		this.averageStrikeRate = strikeRate;
-		this.averageBowlingEconomy = bowlingEconomy;
-		this.averageBallsPlayedPerInnings = ballsPlayedPerInnings;
-		this.averageWicketsPer100Balls = wicketsPer100Balls;
+		this.playerStats = playerStats;
 	}
+	
 	public void incrementBallsPlayed(){
 		noOfBallsPlayed++;
 	}
 	public void incrementScore(int runs) {
 		score+= runs;
 	}
-	public void incrementOvers() {
+	public void incrementOversBowled() {
 		this.noOfOversBowled++;
 	}
 	public void setDecimalBallsBowled(int decimalBallsBowled) {
@@ -83,5 +88,8 @@ public class Player {
 	}
 	public String getName() {
 		return name;
+	}
+	public PlayerStats getPlayerStats() {
+		return playerStats;
 	}
 }
