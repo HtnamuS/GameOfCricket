@@ -57,9 +57,9 @@ public class OverService {
 			15.0f + variableWeight/(0.5f + Math.abs(probRun - 1)), // 1
 			7.0f + variableWeight/(0.5f + Math.abs(probRun - 2)), // 2
 			4.0f + variableWeight/(0.5f + Math.abs(probRun - 3)), // 3
-			3.0f + variableWeight/(0.5f + Math.abs(probRun - 4)), // 4
-			0.25f + 0.1f* variableWeight/(0.5f + Math.abs(probRun - 5)), //5
-			1.5f + variableWeight/(0.5f + Math.abs(probRun - 6)) //6
+			1.5f + variableWeight/(0.5f + Math.abs(probRun - 4)), // 4
+			0.05f + 0.1f* variableWeight/(0.5f + Math.abs(probRun - 5)), //5
+			0.5f + variableWeight/(0.5f + Math.abs(probRun - 6)) //6
 		);
 		return runChances;
 	}
@@ -87,7 +87,8 @@ public class OverService {
 			over.incrementNumberOfBallsBowled();
 			return Innings.InningsStatus.AllOut;
 		}
-		over.setBattingEnd(teamService.nextBatsman(over.getBattingTeam()));
+		Player nextBatsman = teamService.nextBatsman(over.getBattingTeam());
+		over.setBattingEnd(nextBatsman);
 		over.newPartnership(ballIndex);
 		return Innings.InningsStatus.OnGoing;
 	}
@@ -104,9 +105,7 @@ public class OverService {
 			return Innings.InningsStatus.TargetReached;
 		}
 		if (ballResult.didStrikeChange()) {
-			Player temp = over.getBowlingEnd();
-			over.setBowlingEnd(over.getBattingEnd());
-			over.setBattingEnd(temp);
+			over.swapBatsmen();
 		}
 		return Innings.InningsStatus.OnGoing;
 	}

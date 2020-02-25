@@ -99,8 +99,10 @@ public class Over {
 	public void setBattingEnd(Player newBattingEnd){
 		transientInningsDetails.setBattingEnd(newBattingEnd);
 	}
-	public void setBowlingEnd(Player newBowlingEnd) {
-		transientInningsDetails.setBattingEnd(newBowlingEnd);
+	public void swapBatsmen(){
+		Player temp = transientInningsDetails.getBattingEnd();
+		transientInningsDetails.setBattingEnd(transientInningsDetails.getBowlingEnd());
+		transientInningsDetails.setBowlingEnd(temp);
 	}
 	public void incrementScoreAndRuns(int runsThisBall){
 		if(validRunsInBall.contains(runsThisBall)){
